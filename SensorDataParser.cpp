@@ -21,6 +21,7 @@ int main()
     vector<vector<double>> accelerationFile;
     vector<vector<double>> gyroFile;
     vector<vector<double>> magneticFile;
+    double mainZeroTime = 0;
 
     vector<vector<double>> outputFile;
 
@@ -56,9 +57,13 @@ int main()
             }
             lineBuff.erase(0, pos + mDelimiter.length());
         }
+        if (lineBuff.length() != 0)
+        {
+            line.push_back(lineBuff);
+        }
         if (line.size() != 4)
         {
-            throw "Main file dimensions not ok\n";
+           // throw "Main file dimensions not ok\n";
         }
         dblLine.push_back(atof(line.at(0).c_str()));
         dblLine.push_back(atof(line.at(1).c_str()));
@@ -151,8 +156,12 @@ int main()
        magneticFile.push_back(dblLine);
    }
    int i = 0;
+   mainZeroTime = mainFile.at(0).at(0);
 
    cout << "Parsing in progress...\n";
+   double maxAccDiff = -1;
+   double maxGyroDeff = -1;
+   double maxMagDiff = -1;
    for (int i = 0; i < mainFile.size(); i++)
    {
        //Add Main file to output
@@ -170,6 +179,10 @@ int main()
                minDiffIndex = j;
            }
        }
+       if (maxAccDiff < abs(accelerationFile.at(minDiffIndex).at(0) - mainFile.at(i).at(0)))
+       {
+           maxAccDiff = abs(accelerationFile.at(minDiffIndex).at(0) - mainFile.at(i).at(0));
+       }
        outputLine.push_back(accelerationFile.at(minDiffIndex).at(1));
        outputLine.push_back(accelerationFile.at(minDiffIndex).at(2));
        outputLine.push_back(accelerationFile.at(minDiffIndex).at(3));
@@ -184,6 +197,10 @@ int main()
                mindiff = abs(gyroFile.at(j).at(0) - mainFile.at(i).at(0));
                minDiffIndex = j;
            }
+       }
+       if (maxGyroDeff < abs(gyroFile.at(minDiffIndex).at(0) - mainFile.at(i).at(0)))
+       {
+           maxGyroDeff = abs(gyroFile.at(minDiffIndex).at(0) - mainFile.at(i).at(0));
        }
        outputLine.push_back(gyroFile.at(minDiffIndex).at(1));
        outputLine.push_back(gyroFile.at(minDiffIndex).at(2));
@@ -200,6 +217,10 @@ int main()
                minDiffIndex = j;
            }
        }
+       if (maxMagDiff < abs(magneticFile.at(minDiffIndex).at(0) - mainFile.at(i).at(0)))
+       {
+           maxMagDiff = abs(magneticFile.at(minDiffIndex).at(0) - mainFile.at(i).at(0));
+       }
        outputLine.push_back(magneticFile.at(minDiffIndex).at(1));
        outputLine.push_back(magneticFile.at(minDiffIndex).at(2));
        outputLine.push_back(magneticFile.at(minDiffIndex).at(3));
@@ -209,6 +230,15 @@ int main()
 
    }
 
+   //Shifting time
+   for (int i = 0; i < outputFile.size(); i++)
+   {
+       outputFile.at(i).at(0) = (outputFile.at(i).at(0) - mainZeroTime) / 1000;
+   }
+
+   cout << "Max acceleration time difference: " << maxAccDiff << endl;
+   cout << "Max Gyro time difference: " << maxGyroDeff << endl;
+   cout << "Max Magnetometer time difference: " << maxMagDiff << endl;
    cout << "Writing output file" << endl;
 
    for (int i = 0; i < outputFile.size(); i++)
