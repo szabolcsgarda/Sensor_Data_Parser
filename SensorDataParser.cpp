@@ -166,7 +166,12 @@ int main()
    {
        //Add Main file to output
        vector<double> outputLine;
-       outputLine = mainFile.at(i);
+
+       //Multiply by -1 and change sequency to make compatible with the other datasets
+       outputLine.push_back(mainFile.at(i).at(0));
+       outputLine.push_back(-1 * mainFile.at(i).at(2));
+       outputLine.push_back(-1 * mainFile.at(i).at(3));
+       outputLine.push_back(-1 * mainFile.at(i).at(1));
 
        //Add best acceleration
        double mindiff = 99999.0;
